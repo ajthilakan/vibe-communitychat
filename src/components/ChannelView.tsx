@@ -1,0 +1,79 @@
+import { useEffect, useMemo, useState } from 'react'
+import type { Channel } from '../types'
+import { useAuth } from '../auth/useAuth'
+import { useChannelMessages } from '../hooks/useChannelMessages'
+import { useChannelReactions } from '../hooks/useChannelReactions'
+import { aggregateReactions } from '../lib/reactionUtils'
+import { replyCounts } from '../lib/messageUtils'
+import { MessageList } from './MessageList'
+import { MessageComposer } from './MessageComposer'
+import { ThreadPanel } from './ThreadPanel'
+import { WelcomeBanner } from './WelcomeBanner'
+
+// Active-channel surface: wires the channel's live messages and reactions to the
+// list, composer, and (when opened) thread panel. #welcome additionally shows the
+// static WelcomeBanner (U12).
+export function ChannelView({ channel }: { channel: Channel }) {
+  const { user } = useAuth()
+  const { messages, loading } = useChannelMessages(channel.id)
+  const messageIds = useMemo(() => messages.map((m) => m.id), [messages])
+  const { reactions, toggle } = useChannelReactions(channel.id, user?.id, messageIds)
+  const [threadParentId, setThreadParentId] = useState<string | null>(null)
+
+  // Close any open thread when switching channels.
+  useEffect(() => setThreadParentId(null), [channel.id])
+
+  const topLevel = useMemo(
+    () => messages.filter((m) => m.parent_message_id === null),
+    [messages],
+  )
+  const counts = useMemo(() => replyCounts(messages), [messages])
+
+  const summariesFor = (messageId: string) =>
+    aggregateReactions(
+      reactions.filter((r) => r.message_id === messageId),
+      user?.id,
+    )
+
+  const threadParent = threadParentId
+    ? (messages.find((m) => m.id === threadParentId) ?? null)
+    : null
+  const threadReplies = threadParentId
+    ? messages.filter((m) => m.parent_message_id === threadParentId)
+    : []
+
+  return (
+    <section className="channel-view">
+      <header className="channel-header">
+        <span className="channel-hash">#</span>
+        {channel.name}
+      </header>
+
+      <div className="channel-main">
+        <div className="channel-stream">
+          {channel.slug === 'welcome' && <WelcomeBanner />}
+          <MessageList
+            messages={topLevel}
+            loading={loading}
+            replyCounts={counts}
+            summariesFor={summariesFor}
+            onToggleReaction={toggle}
+            onOpenThread={setThreadParentId}
+          />
+          <MessageComposer channelId={channel.id} placeholder={`Message #${channel.name}`} />
+        </div>
+
+        {threadParent && (
+          <ThreadPanel
+            parent={threadParent}
+            replies={threadReplies}
+            channelId={channel.id}
+            summariesFor={summariesFor}
+            onToggleReaction={toggle}
+            onClose={() => setThreadParentId(null)}
+          />
+        )}
+      </div>
+    </section>
+  )
+}
