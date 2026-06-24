@@ -7,7 +7,10 @@ create table if not exists public.reactions (
   id         uuid primary key default gen_random_uuid(),
   message_id uuid not null references public.messages (id) on delete cascade,
   user_id    uuid not null references public.profiles (id) on delete cascade,
-  emoji      text not null,
+  -- Bound the emoji server-side: the client only sends short emoji from a curated
+  -- palette, but a client holding the anon key controls this value directly, and
+  -- reactions have no rate-limit trigger — so the cap stops unbounded-write abuse.
+  emoji      text not null check (char_length(emoji) between 1 and 16),
   created_at timestamptz not null default now(),
   unique (message_id, user_id, emoji)
 );
@@ -45,7 +48,7 @@ create policy "reactions: insert own"
 create policy "reactions: delete own"
   on public.reactions for delete
   to authenticated
-  using (user_id = auth.uid());
+  using (user_id = auth.uid() and public.can_access_message(message_id));
 
 -- Realtime: deliver INSERT and DELETE events. REPLICA IDENTITY FULL so DELETE
 -- payloads carry the removed row (needed to decrement the right emoji/user).

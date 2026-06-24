@@ -40,7 +40,12 @@ export function useChannelReactions(
       .select('id,message_id,user_id,emoji,messages!inner(channel_id)')
       .eq('messages.channel_id', channelId)
       .then(({ data, error }) => {
-        if (!active || error || !data) return
+        if (!active) return
+        if (error) {
+          console.error('Failed to load reactions:', error.message)
+          return
+        }
+        if (!data) return
         setReactions(
           data.map((r) => {
             const row = r as unknown as ReactionRow
@@ -70,7 +75,7 @@ export function useChannelReactions(
         { event: 'DELETE', schema: 'public', table: 'reactions' },
         (payload) => {
           const row = payload.old as ReactionRow
-          if (!active || !row?.message_id) return
+          if (!active || !row?.message_id || !visibleRef.current.has(row.message_id)) return
           setReactions((prev) => removeReaction(prev, row))
         },
       )
@@ -88,18 +93,30 @@ export function useChannelReactions(
       if (!userId) return
       const target = { message_id: messageId, user_id: userId, emoji }
       if (mine) {
+        // Optimistically remove; restore it if the delete fails (no realtime echo
+        // will ever reconcile a failed op, so we must roll back ourselves).
         setReactions((prev) => removeReaction(prev, target))
-        await supabase
+        const { error } = await supabase
           .from('reactions')
           .delete()
           .match({ message_id: messageId, user_id: userId, emoji })
+        if (error) {
+          console.error('Failed to remove reaction:', error.message)
+          setReactions((prev) =>
+            upsertReaction(prev, { id: `rollback-${messageId}-${emoji}`, ...target }),
+          )
+        }
       } else {
         setReactions((prev) =>
           upsertReaction(prev, { id: `optimistic-${messageId}-${emoji}`, ...target }),
         )
-        await supabase
+        const { error } = await supabase
           .from('reactions')
           .insert({ message_id: messageId, user_id: userId, emoji })
+        if (error) {
+          console.error('Failed to add reaction:', error.message)
+          setReactions((prev) => removeReaction(prev, target))
+        }
       }
     },
     [userId],

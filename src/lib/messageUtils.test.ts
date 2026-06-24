@@ -49,4 +49,13 @@ describe('replyCounts', () => {
     ]
     expect(replyCounts(messages)).toEqual({ p: 2 })
   })
+
+  it('returns an empty record for no messages', () => {
+    expect(replyCounts([])).toEqual({})
+  })
+
+  it('omits parents with zero replies (sparse map — callers rely on undefined being falsy)', () => {
+    const counts = replyCounts([msg({ id: 'p', parent_message_id: null })])
+    expect('p' in counts).toBe(false)
+  })
 })

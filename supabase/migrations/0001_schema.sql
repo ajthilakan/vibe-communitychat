@@ -63,8 +63,10 @@ security definer
 set search_path = ''
 as $$
 begin
+  -- display_name is NOT NULL; coalesce guards the edge where new.email is null
+  -- (e.g. a future non-email signup path) so the trigger never blocks account creation.
   insert into public.profiles (id, display_name)
-  values (new.id, split_part(new.email, '@', 1));
+  values (new.id, coalesce(nullif(split_part(new.email, '@', 1), ''), 'user'));
 
   insert into public.server_members (user_id, server_id)
   select new.id, s.id from public.servers s;

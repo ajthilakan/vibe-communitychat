@@ -71,6 +71,26 @@ create policy "server_members: insert own"
   to authenticated
   with check (user_id = auth.uid());
 
+-- Helper: is `parent` a valid thread parent for a reply in channel `chan`?
+-- It must be a top-level message (parent_message_id IS NULL) living in the SAME
+-- channel. This blocks cross-channel/cross-thread reply smuggling (a reply whose
+-- channel_id differs from its parent's) and enforces one-level Slack-style threads.
+-- Named params avoid the correlated-subquery ambiguity an inline policy would hit.
+create or replace function public.is_valid_thread_parent(parent uuid, chan uuid)
+returns boolean
+language sql
+security definer
+set search_path = ''
+stable
+as $$
+  select exists (
+    select 1 from public.messages p
+    where p.id = parent
+      and p.channel_id = chan
+      and p.parent_message_id is null
+  );
+$$;
+
 -- messages ------------------------------------------------------------------
 -- Read messages in channels of servers you belong to. Insert only as yourself
 -- and only into a channel whose server you belong to. No update/delete (KTD-7).
@@ -92,5 +112,9 @@ create policy "messages: insert own in member channel"
     and exists (
       select 1 from public.channels c
       where c.id = channel_id and public.is_server_member(c.server_id)
+    )
+    and (
+      parent_message_id is null
+      or public.is_valid_thread_parent(parent_message_id, channel_id)
     )
   );

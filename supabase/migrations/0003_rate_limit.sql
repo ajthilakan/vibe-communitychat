@@ -15,12 +15,16 @@ declare
   recent_10s int;
   recent_60s int;
 begin
-  select count(*) into recent_10s
-  from public.messages
-  where user_id = new.user_id
-    and created_at > now() - interval '10 seconds';
+  -- Serialize this user's concurrent inserts so a parallel burst can't all read
+  -- the same pre-flood count and slip through together. Per-user xact lock →
+  -- contention only between one author's simultaneous inserts; released at commit.
+  perform pg_advisory_xact_lock(hashtextextended(new.user_id::text, 0));
 
-  select count(*) into recent_60s
+  -- One index scan over the last minute; the 10s window is a filtered subcount.
+  select
+    count(*) filter (where created_at > now() - interval '10 seconds'),
+    count(*)
+  into recent_10s, recent_60s
   from public.messages
   where user_id = new.user_id
     and created_at > now() - interval '60 seconds';

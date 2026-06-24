@@ -21,7 +21,7 @@ export function ChannelSidebar({
               type="button"
               className={`channel-item${c.id === activeId ? ' active' : ''}`}
               onClick={() => onSelect(c)}
-              aria-current={c.id === activeId}
+              aria-current={c.id === activeId ? 'page' : undefined}
             >
               <span className="channel-hash">#</span>
               {c.name}
