@@ -1,6 +1,6 @@
 # vibe-communitychat — CommunityChat
 
-A single-server, Slack/Discord-style chat app — the Tier B build for my [vibe30 challenge](https://ajthilakan.com/posts/quick-update-retooling/#thread-2--vibe-30-or-60-challenge). I built it to **test a real-time messaging app on the popular [Supabase](https://supabase.com) backend**, and to take on a more complex, full-stack application as my next vibe-coding challenge. Spun from [`vibe-starter-react`](https://github.com/ajthilakan/vibe-starter-react).
+A single-server, Slack/Discord-style chat app — the next build for my [vibe30 challenge](https://ajthilakan.com/posts/quick-update-retooling/#thread-2--vibe-30-or-60-challenge). I built it to **test a real-time messaging app on the popular [Supabase](https://supabase.com) backend**, and to take on a more complex, full-stack application as my next vibe-coding challenge. Spun from [`vibe-starter-react`](https://github.com/ajthilakan/vibe-starter-react).
 
 **v1:** magic-link sign-in (passwordless), seeded channels, text messages, Slack-style threads, and emoji reactions — all updating **live**. _Status: in active build._
 
@@ -32,5 +32,5 @@ The Supabase **service-role / secret key is never** committed or shipped to the 
 
 - Single-server Discord/Slack-style chat — magic-link auth, channels, threads, live messages, reactions.
 - Live: https://vibe-communitychat.pages.dev
-- My first vibe app with a real backend — a full-stack Tier B build (React + Supabase).
+- My first vibe app with a real backend — a more complex full-stack build (React + Supabase).
 - Part of my [vibe30 challenge](https://ajthilakan.com/posts/quick-update-retooling/#thread-2--vibe-30-or-60-challenge).
