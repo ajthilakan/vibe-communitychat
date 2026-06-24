@@ -1,0 +1,35 @@
+﻿name: CI
+
+# Runs on PRs (Tier B merge gate) AND direct pushes to main (Tier A coverage),
+# so a leaked secret or broken build is caught either way.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint --if-present  # oxlint (ships with this template)
+      - run: npm run build              # `tsc -b && vite build` — typecheck + build is the real gate
+      - run: npm test --if-present      # runs tests only if a test script exists
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0                # full history so gitleaks can scan all commits
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # gitleaks-action is free for personal accounts + public repos (no license key needed).
