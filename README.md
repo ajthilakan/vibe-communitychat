@@ -1,42 +1,36 @@
-﻿# vibe-starter-react
+# vibe-communitychat — CommunityChat
 
-React template for my [vibe30](https://ajthilakan.com/posts/quick-update-retooling/#thread-2--vibe-30-or-60-challenge) apps. **Vite + React + TypeScript**, with CI (lint + typecheck + build + secret-scan) and house rules already wired. Use this for apps with real interactivity or a backend (e.g. Supabase); use the vanilla [`vibe-starter`](https://github.com/ajthilakan/vibe-starter) for static toys/games.
+A single-server, Slack/Discord-style chat app — the Tier B build for my [vibe30 challenge](https://ajthilakan.com/posts/quick-update-retooling/#thread-2--vibe-30-or-60-challenge). I built it to **test a real-time messaging app on the popular [Supabase](https://supabase.com) backend**, and to take on a more complex, full-stack application as my next vibe-coding challenge. Spun from [`vibe-starter-react`](https://github.com/ajthilakan/vibe-starter-react).
 
-## Use this template
+**v1:** magic-link sign-in (passwordless), seeded channels, text messages, Slack-style threads, and emoji reactions — all updating **live**. _Status: in active build._
+
+## Stack
+
+- **Frontend:** Vite + React + TypeScript SPA, deployed to Cloudflare Pages.
+- **Backend:** [Supabase](https://supabase.com) — Auth (magic link), Postgres with Row-Level Security on every table, and Realtime for live messages + reactions.
+
+## Dev
 
 ```bash
-gh repo create vibe-SLUG --template ajthilakan/vibe-starter-react --public --clone
-cd vibe-SLUG
 npm install
-npm run dev
+cp .env.example .env   # then fill in your Supabase project URL + anon key
+npm run dev      # local dev server
+npm run build    # typecheck + production build to dist/
+npm run preview  # serve the built dist/
 ```
 
-(Or click **"Use this template"** on GitHub.)
+### Environment
 
-## What''s inside
+Set these in a local `.env` (gitignored) and in the Cloudflare Pages project settings:
 
-- **Vite + React + TS** scaffold — deploys clean as a static SPA to Cloudflare Pages.
-- **`.github/workflows/ci.yml`** — `npm ci` → lint (oxlint) → `npm run build` (typecheck + build) → tests-if-present, plus a **gitleaks** secret scan. Runs on pushes to `main` and on PRs.
-- **`.gitignore`** — ignores `node_modules`, `dist`, `.env*` (never commit secrets — the repo is public).
-- **`CLAUDE.md`** — house rules for agent runs in this repo (incl. the anon-key-is-public / service-role-is-secret note for backend apps).
+- `VITE_SUPABASE_URL` — your Supabase project URL
+- `VITE_SUPABASE_ANON_KEY` — the anon / publishable key. **Public by design** (it ships in the browser bundle); Row-Level Security, not key secrecy, protects the data.
 
-## Backend env (Supabase apps)
-
-Frontend reads public config from Vite env vars at build time, e.g. `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Set them in Cloudflare Pages project settings (and a local `.env`, gitignored). The anon key is public by design; the service-role key must never be committed or shipped to the client.
-
-## Deploy (Cloudflare Pages)
-
-- **Keeper / want per-PR previews → git-connect from the start** (CF dashboard → connect this repo, Pages tab). A git-connected project can also be wrangler-deployed; a direct-upload project cannot be converted to git-connected later.
-- **Pure throwaway → direct upload:** `npm run build && npx wrangler pages deploy ./dist --project-name=vibe-SLUG`.
-
-See `Setup - vibe30 app pipeline` in the vault for the full per-tier workflow.
+The Supabase **service-role / secret key is never** committed or shipped to the client.
 
 ---
 
-<!-- Each app spun from this template should replace the section below. -->
-
-## Vibe app NN — APPNAME
-
-- One-line description.
-- Link to live app (if available)
+- Single-server Discord/Slack-style chat — magic-link auth, channels, threads, live messages, reactions.
+- Live: https://vibe-communitychat.pages.dev
+- My first vibe app with a real backend — a full-stack Tier B build (React + Supabase).
 - Part of my [vibe30 challenge](https://ajthilakan.com/posts/quick-update-retooling/#thread-2--vibe-30-or-60-challenge).
