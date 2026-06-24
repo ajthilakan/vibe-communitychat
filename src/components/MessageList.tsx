@@ -37,7 +37,7 @@ export function MessageList({
           key={m.id}
           message={m}
           summaries={summariesFor(m.id)}
-          onToggleReaction={(emoji, mine) => onToggleReaction(m.id, emoji, mine)}
+          onToggleReaction={onToggleReaction}
           replyCount={replyCounts[m.id]}
           onOpenThread={() => onOpenThread(m.id)}
         />

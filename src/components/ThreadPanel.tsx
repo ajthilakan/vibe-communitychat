@@ -33,7 +33,7 @@ export function ThreadPanel({
         <MessageItem
           message={parent}
           summaries={summariesFor(parent.id)}
-          onToggleReaction={(emoji, mine) => onToggleReaction(parent.id, emoji, mine)}
+          onToggleReaction={onToggleReaction}
         />
       </div>
 
@@ -46,7 +46,7 @@ export function ThreadPanel({
               key={r.id}
               message={r}
               summaries={summariesFor(r.id)}
-              onToggleReaction={(emoji, mine) => onToggleReaction(r.id, emoji, mine)}
+              onToggleReaction={onToggleReaction}
             />
           ))
         )}

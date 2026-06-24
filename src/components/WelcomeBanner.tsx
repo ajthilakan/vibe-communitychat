@@ -1,4 +1,4 @@
-const REPO_URL = 'https://github.com/ajthilakan/vibe-communitychat'
+import { REPO_URL } from '../lib/links'
 
 // Static banner shown at the top of #welcome only (U12). Tells new users what
 // CommunityChat is, nudges an intro, and links the source repo. #welcome stays a

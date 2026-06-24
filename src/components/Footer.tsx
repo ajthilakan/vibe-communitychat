@@ -1,6 +1,4 @@
-const REPO_URL = 'https://github.com/ajthilakan/vibe-communitychat'
-const VIBE30_URL =
-  'https://ajthilakan.com/posts/quick-update-retooling/#thread-2--vibe-30-or-60-challenge'
+import { REPO_URL, VIBE30_URL } from '../lib/links'
 
 // Small credit footer required by the app house rules: link to this app's own
 // repo ("source") and to the vibe30 challenge writeup.

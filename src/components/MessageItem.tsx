@@ -23,7 +23,7 @@ export function MessageItem({
 }: {
   message: Message
   summaries: ReactionSummary[]
-  onToggleReaction: (emoji: string, mine: boolean) => void
+  onToggleReaction: (messageId: string, emoji: string, mine: boolean) => void
   replyCount?: number
   onOpenThread?: () => void
 }) {
@@ -34,10 +34,13 @@ export function MessageItem({
         <span className="message-time">{formatTime(message.created_at)}</span>
       </div>
       <div className="message-body">{message.body}</div>
-      <ReactionBar summaries={summaries} onToggle={onToggleReaction} />
+      <ReactionBar
+        summaries={summaries}
+        onToggle={(emoji, mine) => onToggleReaction(message.id, emoji, mine)}
+      />
       {onOpenThread && (
         <button type="button" className="thread-link" onClick={onOpenThread}>
-          {replyCount && replyCount > 0
+          {replyCount
             ? `${replyCount} ${replyCount === 1 ? 'reply' : 'replies'}`
             : 'Reply in thread'}
         </button>

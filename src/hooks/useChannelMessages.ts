@@ -82,6 +82,7 @@ export function useChannelMessages(channelId: string | null) {
               .select('display_name')
               .eq('id', row.user_id)
               .single()
+            if (!active) return
             name = data?.display_name ?? 'Unknown'
             authorCache.current.set(row.user_id, name)
           }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { Channel } from '../types'
 import { useAuth } from '../auth/useAuth'
 import { useChannelMessages } from '../hooks/useChannelMessages'
@@ -29,18 +29,22 @@ export function ChannelView({ channel }: { channel: Channel }) {
   )
   const counts = useMemo(() => replyCounts(messages), [messages])
 
-  const summariesFor = (messageId: string) =>
-    aggregateReactions(
-      reactions.filter((r) => r.message_id === messageId),
-      user?.id,
-    )
+  const summariesFor = useCallback(
+    (messageId: string) =>
+      aggregateReactions(
+        reactions.filter((r) => r.message_id === messageId),
+        user?.id,
+      ),
+    [reactions, user?.id],
+  )
 
-  const threadParent = threadParentId
-    ? (messages.find((m) => m.id === threadParentId) ?? null)
-    : null
-  const threadReplies = threadParentId
-    ? messages.filter((m) => m.parent_message_id === threadParentId)
-    : []
+  const { threadParent, threadReplies } = useMemo(() => {
+    if (!threadParentId) return { threadParent: null, threadReplies: [] }
+    return {
+      threadParent: messages.find((m) => m.id === threadParentId) ?? null,
+      threadReplies: messages.filter((m) => m.parent_message_id === threadParentId),
+    }
+  }, [messages, threadParentId])
 
   return (
     <section className="channel-view">

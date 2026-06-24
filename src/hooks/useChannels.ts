@@ -8,7 +8,6 @@ import type { Channel } from '../types'
 export function useChannels() {
   const [channels, setChannels] = useState<Channel[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let active = true
@@ -16,9 +15,9 @@ export function useChannels() {
       .from('channels')
       .select('id,server_id,slug,name,position')
       .order('position', { ascending: true })
-      .then(({ data, error: err }) => {
+      .then(({ data, error }) => {
         if (!active) return
-        if (err) setError(err.message)
+        if (error) console.error('Failed to load channels:', error.message)
         else setChannels((data as Channel[]) ?? [])
         setLoading(false)
       })
@@ -27,5 +26,5 @@ export function useChannels() {
     }
   }, [])
 
-  return { channels, loading, error }
+  return { channels, loading }
 }
