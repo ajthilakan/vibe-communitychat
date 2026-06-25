@@ -59,8 +59,7 @@ statements), not via the dashboard, so the setup is reproducible.
 version: the real off-switch is **pausing the Supabase project** — taking down
 Cloudflare alone does not stop direct API access, because the anon key is public.
 
-**What to watch** (Supabase dashboard → **Reports / Usage**, project
-`axotgmkyfffazntrbjio`):
+**What to watch** (Supabase dashboard → **Reports / Usage**):
 
 - **Auth → Users (MAU):** sudden spikes in new signups can signal abuse — the
   Tier-2 lever is turning off "Allow new users to sign up".
