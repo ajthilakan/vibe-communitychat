@@ -28,49 +28,6 @@ Set these in a local `.env` (gitignored) and in the Cloudflare Pages project set
 
 The Supabase **service-role / secret key is never** committed or shipped to the client.
 
-## Database & migrations
-
-The schema, RLS policies, rate-limit trigger, seed data, reactions, and Realtime
-config live in `supabase/migrations/` and are applied with the Supabase CLI:
-
-```bash
-npx supabase link --project-ref <project-ref>   # one-time
-npx supabase db push                            # apply all migrations
-```
-
-`db push` needs the database password in `SUPABASE_DB_PASSWORD` (it is **not** the
-anon key — find/reset it under **Project Settings → Database**). Migration order:
-
-| File | What it does |
-|------|--------------|
-| `0001_schema.sql` | Tables (profiles, servers, server_members, channels, messages), indexes, new-user trigger (creates profile + auto-joins the server) |
-| `0002_rls.sql` | Row-Level Security + policies on every table — the real data boundary |
-| `0003_rate_limit.sql` | `BEFORE INSERT` trigger on messages: rejects floods (>5/10s, >30/60s) |
-| `0004_seed.sql` | One server + the 5 channels (`#welcome`, `#world-cup-2026`, `#tv-shows`, `#books`, `#games`) |
-| `0005_reactions.sql` | `reactions` table + RLS + adds it to the Realtime publication |
-| `0006_realtime.sql` | Adds `messages` to the Realtime publication (no dashboard toggle) |
-
-Realtime is enabled **in SQL** (the `alter publication supabase_realtime …`
-statements), not via the dashboard, so the setup is reproducible.
-
-## Operations
-
-**If something is on fire, see [`KILL-SWITCH.md`](./KILL-SWITCH.md).** Short
-version: the real off-switch is **pausing the Supabase project** — taking down
-Cloudflare alone does not stop direct API access, because the anon key is public.
-
-**What to watch** (Supabase dashboard → **Reports / Usage**):
-
-- **Auth → Users (MAU):** sudden spikes in new signups can signal abuse — the
-  Tier-2 lever is turning off "Allow new users to sign up".
-- **Database → rows / size:** a fast-growing `messages` or `reactions` table is
-  the spam signal; the rate-limit trigger is the first line of defence.
-- **Realtime → concurrent connections** and **API/egress:** watch against the
-  free-tier ceilings (these are the de-facto circuit-breaker for v1 scale).
-
-When usage approaches free-tier limits or any metric climbs abnormally fast,
-treat it as a possible abuse event and consult the kill-switch tiers.
-
 ---
 
 - Single-server Discord/Slack-style chat — magic-link auth, channels, threads, live messages, reactions.
