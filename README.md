@@ -8,6 +8,7 @@ A single-server, Slack/Discord-style chat app — the next build for my [vibe30 
 
 - **Frontend:** Vite + React + TypeScript SPA, deployed to Cloudflare Pages.
 - **Backend:** [Supabase](https://supabase.com) — Auth (magic link), Postgres with Row-Level Security on every table, and Realtime for live messages + reactions.
+- **Email:** transactional auth emails (the magic-link sign-in) are delivered via [Resend](https://resend.com), wired in as Supabase's custom SMTP provider.
 
 ## Dev
 
