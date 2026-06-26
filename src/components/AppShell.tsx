@@ -20,6 +20,9 @@ export function AppShell() {
   const [editingProfile, setEditingProfile] = useState(false)
   const [promptDismissed, setPromptDismissed] = useState(false)
   const [showLogin, setShowLogin] = useState(false)
+  // Mobile-only: the channel sidebar is hidden behind a hamburger toggle. On
+  // desktop the sidebar is always visible (CSS), so this flag is a no-op there.
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const readOnly = !user
 
@@ -62,7 +65,19 @@ export function AppShell() {
   return (
     <div className="app">
       <header className="app-header">
-        <div className="app-title">CommunityChat</div>
+        <div className="app-header-left">
+          <button
+            type="button"
+            className="sidebar-toggle"
+            aria-label="Toggle channel list"
+            aria-expanded={sidebarOpen}
+            aria-controls="channel-sidebar"
+            onClick={() => setSidebarOpen((o) => !o)}
+          >
+            ☰
+          </button>
+          <div className="app-title">CommunityChat</div>
+        </div>
         <div className="app-user">
           {readOnly ? (
             <button type="button" className="header-login" onClick={() => setShowLogin(true)}>
@@ -90,8 +105,13 @@ export function AppShell() {
         <ChannelSidebar
           channels={channels}
           activeId={activeId}
-          onSelect={(c) => setActiveId(c.id)}
           online={online}
+          open={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          onSelect={(c) => {
+            setActiveId(c.id)
+            setSidebarOpen(false) // close the overlay after picking on mobile
+          }}
         />
         <main className="app-content">
           {loading ? (

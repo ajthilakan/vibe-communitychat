@@ -95,8 +95,32 @@
   flex-shrink: 0;
 }
 
+.app-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .app-title {
   font-weight: 700;
+}
+
+/* Hamburger toggle for the channel sidebar — hidden on desktop, shown at the
+   mobile breakpoint where the sidebar becomes a slide-in overlay. */
+.sidebar-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 1.2rem;
+  line-height: 1;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+
+.sidebar-toggle:hover {
+  background: var(--bg-elevated);
 }
 
 .app-user {
@@ -339,10 +363,19 @@
   min-width: 0;
 }
 
+/* Scroll region holding the (optional) welcome banner + message list, so the
+   banner scrolls away with the messages rather than pinning to the top. */
+.channel-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
 /* ---------- Messages ---------- */
 .message-list {
   flex: 1;
-  overflow-y: auto;
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -666,4 +699,91 @@
 
 .app-footer a:hover {
   text-decoration: underline;
+}
+
+/* Backdrop behind the slide-in sidebar (mobile only; only rendered when open). */
+.sidebar-backdrop {
+  display: none;
+}
+
+/* ---------- Mobile / narrow viewports ---------- */
+/* Breakpoint: 640px. Below it the sidebar collapses behind a hamburger, the
+   thread panel becomes a full-screen overlay, and spacing tightens. Desktop
+   (>640px) keeps the original side-by-side layout untouched. */
+@media (max-width: 640px) {
+  .sidebar-toggle {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Sidebar slides in over the chat instead of taking a fixed column. */
+  .sidebar {
+    position: fixed;
+    top: 52px; /* below the header */
+    left: 0;
+    bottom: 0;
+    width: 78%;
+    max-width: 280px;
+    z-index: 40;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    border-right: 1px solid var(--border);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 52px 0 0 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 30;
+  }
+
+  /* Header / content spacing tightens a touch. */
+  .app-header {
+    padding: 0 10px;
+  }
+
+  .app-identity {
+    max-width: 130px;
+  }
+
+  .message-list {
+    padding: 12px;
+  }
+
+  .channel-header {
+    padding: 0 12px;
+  }
+
+  .composer {
+    padding: 10px 12px;
+  }
+
+  /* Condense the welcome banner so messages stay visible (it also scrolls away
+     now that it lives inside the scroll region). */
+  .welcome-banner {
+    padding: 12px 14px;
+  }
+
+  .welcome-banner h2 {
+    font-size: 1.1rem;
+  }
+
+  .welcome-banner ul {
+    margin: 6px 0;
+    padding-left: 18px;
+  }
+
+  /* Thread panel overlays the whole chat rather than squeezing beside it. */
+  .thread-panel {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    z-index: 45;
+    background: var(--bg);
+  }
 }
