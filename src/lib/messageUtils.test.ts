@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { upsertMessage, replyCounts } from './messageUtils'
+import { upsertMessage, replyCounts, removeMessage } from './messageUtils'
 import type { Message } from '../types'
 
 function msg(over: Partial<Message>): Message {
@@ -52,6 +52,27 @@ describe('replyCounts', () => {
 
   it('returns an empty record for no messages', () => {
     expect(replyCounts([])).toEqual({})
+  })
+})
+
+describe('removeMessage', () => {
+  it('removes the target message', () => {
+    const a = msg({ id: 'a' })
+    const b = msg({ id: 'b' })
+    expect(removeMessage([a, b], 'a').map((m) => m.id)).toEqual(['b'])
+  })
+
+  it('also removes thread replies pointing at the deleted parent (cascade mirror)', () => {
+    const parent = msg({ id: 'p', parent_message_id: null })
+    const r1 = msg({ id: 'r1', parent_message_id: 'p' })
+    const r2 = msg({ id: 'r2', parent_message_id: 'p' })
+    const other = msg({ id: 'o', parent_message_id: null })
+    expect(removeMessage([parent, r1, r2, other], 'p').map((m) => m.id)).toEqual(['o'])
+  })
+
+  it('is a no-op when the id is not present', () => {
+    const a = msg({ id: 'a' })
+    expect(removeMessage([a], 'zzz')).toHaveLength(1)
   })
 
   it('omits parents with zero replies (sparse map — callers rely on undefined being falsy)', () => {

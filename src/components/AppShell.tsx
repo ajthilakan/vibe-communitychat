@@ -7,6 +7,7 @@ import { ChannelSidebar } from './ChannelSidebar'
 import { ChannelView } from './ChannelView'
 import { Footer } from './Footer'
 import { ProfileDialog } from './ProfileDialog'
+import { UsersPanel } from './UsersPanel'
 
 // App layout for both states. Authenticated: server title + identity/sign-out (the
 // identity button opens the profile editor; new users who haven't picked a display
@@ -14,7 +15,7 @@ import { ProfileDialog } from './ProfileDialog'
 // button in the header and an in-place CTA in place of the composer; the magic-link
 // form is reachable but not forced (U15). Defaults to #welcome on first load (U8/U12).
 export function AppShell() {
-  const { user, profile, signOut } = useAuth()
+  const { user, profile, isAdmin, signOut } = useAuth()
   const { channels, loading } = useChannels()
   const [activeId, setActiveId] = useState<string | null>(null)
   const [editingProfile, setEditingProfile] = useState(false)
@@ -23,6 +24,7 @@ export function AppShell() {
   // Mobile-only: the channel sidebar is hidden behind a hamburger toggle. On
   // desktop the sidebar is always visible (CSS), so this flag is a no-op there.
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [showUsers, setShowUsers] = useState(false)
 
   const readOnly = !user
 
@@ -85,6 +87,11 @@ export function AppShell() {
             </button>
           ) : (
             <>
+              {isAdmin && (
+                <button type="button" className="link-button" onClick={() => setShowUsers(true)}>
+                  Users
+                </button>
+              )}
               <button
                 type="button"
                 className="app-identity"
@@ -139,6 +146,10 @@ export function AppShell() {
             setPromptDismissed(true)
           }}
         />
+      )}
+
+      {isAdmin && showUsers && user && (
+        <UsersPanel currentUserId={user.id} onClose={() => setShowUsers(false)} />
       )}
     </div>
   )

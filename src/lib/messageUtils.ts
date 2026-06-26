@@ -14,6 +14,13 @@ export function upsertMessage(list: Message[], incoming: Message): Message[] {
   })
 }
 
+// Remove a message and any of its thread replies from the list. Used for admin
+// deletes: the DB cascades parent → replies (FK ON DELETE CASCADE), so the client
+// mirrors that by dropping the target and everything pointing at it as a parent.
+export function removeMessage(list: Message[], id: string): Message[] {
+  return list.filter((m) => m.id !== id && m.parent_message_id !== id)
+}
+
 // Count of replies per parent message id, for the "N replies" indicator.
 export function replyCounts(messages: Message[]): Record<string, number> {
   const counts: Record<string, number> = {}

@@ -12,6 +12,8 @@ export function MessageList({
   onToggleReaction,
   onOpenThread,
   readOnly = false,
+  isAdmin = false,
+  onDelete,
 }: {
   messages: Message[]
   loading: boolean
@@ -20,6 +22,8 @@ export function MessageList({
   onToggleReaction: (messageId: string, emoji: string, mine: boolean) => void
   onOpenThread: (messageId: string) => void
   readOnly?: boolean
+  isAdmin?: boolean
+  onDelete?: (messageId: string) => void
 }) {
   if (loading) {
     return <div className="message-list empty">Loading messages…</div>
@@ -43,6 +47,8 @@ export function MessageList({
           replyCount={replyCounts[m.id]}
           onOpenThread={() => onOpenThread(m.id)}
           readOnly={readOnly}
+          isAdmin={isAdmin}
+          onDelete={onDelete}
         />
       ))}
     </div>

@@ -27,8 +27,8 @@ export function ChannelView({
   readOnly: boolean
   onRequestLogin: () => void
 }) {
-  const { user, profile } = useAuth()
-  const { messages, loading } = useChannelMessages(channel.id)
+  const { user, profile, isAdmin } = useAuth()
+  const { messages, loading, deleteMessage } = useChannelMessages(channel.id)
   const messageIds = useMemo(() => messages.map((m) => m.id), [messages])
   const { reactions, toggle } = useChannelReactions(channel.id, user?.id, messageIds)
   const { typingNames, notifyTyping, clearUser } = useTyping(
@@ -93,6 +93,8 @@ export function ChannelView({
               onToggleReaction={toggle}
               onOpenThread={setThreadParentId}
               readOnly={readOnly}
+              isAdmin={isAdmin}
+              onDelete={deleteMessage}
             />
           </div>
           <div className="typing-indicator" aria-live="polite">
@@ -120,6 +122,8 @@ export function ChannelView({
             onClose={() => setThreadParentId(null)}
             readOnly={readOnly}
             onRequestLogin={onRequestLogin}
+            isAdmin={isAdmin}
+            onDelete={deleteMessage}
           />
         )}
       </div>

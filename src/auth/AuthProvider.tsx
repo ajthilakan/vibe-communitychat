@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let active = true
     supabase
       .from('profiles')
-      .select('display_name, display_name_set')
+      .select('display_name, display_name_set, is_admin')
       .eq('id', userId)
       .single()
       .then(({ data }) => {
@@ -58,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user: session?.user ?? null,
     loading,
     profile,
+    isAdmin: profile?.is_admin ?? false,
     signOut: async () => {
       await supabase.auth.signOut()
     },
@@ -71,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .update({ display_name, display_name_set: true })
         .eq('id', userId)
       if (error) throw error
-      setProfile({ display_name, display_name_set: true })
+      setProfile((prev) => ({ ...prev, display_name, display_name_set: true, is_admin: prev?.is_admin ?? false }))
     },
   }
 
