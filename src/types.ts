@@ -40,3 +40,20 @@ export interface ReactionSummary {
   count: number
   mine: boolean
 }
+
+export type NotificationType = 'thread_reply' | 'reaction'
+
+// A notification row (notifications table, 0012) flattened for rendering: the
+// actor's display_name is joined in, and thread_root_id/channel_id drive the
+// click-through to the right channel + thread. read_at = null means unread.
+export interface NotificationItem {
+  id: string
+  type: NotificationType
+  actor_name: string
+  channel_id: string
+  message_id: string
+  thread_root_id: string | null
+  emoji: string | null
+  created_at: string
+  read_at: string | null
+}

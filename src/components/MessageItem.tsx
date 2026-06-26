@@ -20,6 +20,7 @@ export function MessageItem({
   onToggleReaction,
   replyCount,
   onOpenThread,
+  threadUnread = false,
   readOnly = false,
   isAdmin = false,
   onDelete,
@@ -29,6 +30,7 @@ export function MessageItem({
   onToggleReaction: (messageId: string, emoji: string, mine: boolean) => void
   replyCount?: number
   onOpenThread?: () => void
+  threadUnread?: boolean
   readOnly?: boolean
   isAdmin?: boolean
   onDelete?: (messageId: string) => void
@@ -72,10 +74,16 @@ export function MessageItem({
         readOnly={readOnly}
       />
       {showThreadLink && (
-        <button type="button" className="thread-link" onClick={onOpenThread}>
+        <button
+          type="button"
+          className={`thread-link${threadUnread ? ' unread' : ''}`}
+          onClick={onOpenThread}
+        >
+          {threadUnread && <span className="thread-unread-dot" aria-hidden="true" />}
           {replyCount
             ? `${replyCount} ${replyCount === 1 ? 'reply' : 'replies'}`
             : 'Reply in thread'}
+          {threadUnread && <span className="thread-unread-tag">new</span>}
         </button>
       )}
     </div>

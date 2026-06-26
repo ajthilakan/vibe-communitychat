@@ -7,6 +7,7 @@ import { useTyping } from '../hooks/useTyping'
 import { aggregateReactions } from '../lib/reactionUtils'
 import { replyCounts } from '../lib/messageUtils'
 import { formatTypingText } from '../lib/typingUtils'
+import { unreadThreadParents } from '../lib/unreadUtils'
 import { MessageList } from './MessageList'
 import { MessageComposer } from './MessageComposer'
 import { LoginCta } from './LoginCta'
@@ -22,12 +23,23 @@ export function ChannelView({
   channel,
   readOnly,
   onRequestLogin,
+  unreadBaseline = null,
+  focusThreadId = null,
+  focusToken = 0,
 }: {
   channel: Channel
   readOnly: boolean
   onRequestLogin: () => void
+  // The channel's read pointer as of entry, for thread-unread highlighting (null
+  // = never visited). Captured once at mount — ChannelView remounts per channel.
+  unreadBaseline?: string | null
+  // A thread to auto-open (from a notification click); focusToken changes on each
+  // click so re-selecting the same thread re-opens it.
+  focusThreadId?: string | null
+  focusToken?: number
 }) {
   const { user, profile, isAdmin } = useAuth()
+  const [baseline] = useState<string | null>(() => unreadBaseline)
   const { messages, loading, deleteMessage } = useChannelMessages(channel.id)
   const messageIds = useMemo(() => messages.map((m) => m.id), [messages])
   const { reactions, toggle } = useChannelReactions(channel.id, user?.id, messageIds)
@@ -40,6 +52,12 @@ export function ChannelView({
 
   // Close any open thread when switching channels.
   useEffect(() => setThreadParentId(null), [channel.id])
+
+  // Open the thread a notification points at. Keyed on focusToken so clicking the
+  // same notification again (already in this channel) re-opens it.
+  useEffect(() => {
+    if (focusThreadId) setThreadParentId(focusThreadId)
+  }, [focusToken]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // A person's own message landing means they've stopped typing — clear them
   // immediately rather than waiting for the idle timeout.
@@ -54,6 +72,13 @@ export function ChannelView({
     [messages],
   )
   const counts = useMemo(() => replyCounts(messages), [messages])
+
+  // Thread parents with replies newer than this visit's baseline (by someone
+  // else) — surfaced as a "new" marker on the reply link until the next visit.
+  const unreadThreadIds = useMemo(
+    () => unreadThreadParents(messages, baseline, user?.id),
+    [messages, baseline, user?.id],
+  )
 
   const summariesFor = useCallback(
     (messageId: string) =>
@@ -92,6 +117,7 @@ export function ChannelView({
               summariesFor={summariesFor}
               onToggleReaction={toggle}
               onOpenThread={setThreadParentId}
+              unreadThreadIds={unreadThreadIds}
               readOnly={readOnly}
               isAdmin={isAdmin}
               onDelete={deleteMessage}
