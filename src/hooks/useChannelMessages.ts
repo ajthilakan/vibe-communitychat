@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import type { Message } from '../types'
-import { upsertMessage } from '../lib/messageUtils'
+import { upsertMessage, removeMessage } from '../lib/messageUtils'
 
 // Raw messages row as it comes back from the realtime INSERT payload (no join).
 interface MessageRow {
@@ -90,6 +90,22 @@ export function useChannelMessages(channelId: string | null) {
           setMessages((prev) => upsertMessage(prev, toMessage(row, name)))
         },
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'messages',
+          filter: `channel_id=eq.${channelId}`,
+        },
+        // Admin deletes (and their cascaded thread replies) arrive here. REPLICA
+        // IDENTITY FULL (0010) puts channel_id on the old row so this filter matches.
+        (payload) => {
+          const row = payload.old as { id?: string }
+          if (!active || !row?.id) return
+          setMessages((prev) => removeMessage(prev, row.id!))
+        },
+      )
       .subscribe()
 
     return () => {
@@ -98,7 +114,24 @@ export function useChannelMessages(channelId: string | null) {
     }
   }, [channelId])
 
-  return { messages, loading }
+  // Admin-only: delete any message. Optimistically drop it (and its replies) for a
+  // snappy UI; the realtime DELETE echo reconciles every other client. RLS
+  // ("messages: admin delete any", 0010) is the real guard — a non-admin call no-ops
+  // server-side, and we roll the optimistic removal back if the delete errors.
+  const deleteMessage = useCallback(async (id: string) => {
+    let prev: Message[] = []
+    setMessages((cur) => {
+      prev = cur
+      return removeMessage(cur, id)
+    })
+    const { error } = await supabase.from('messages').delete().eq('id', id)
+    if (error) {
+      console.error('Failed to delete message:', error.message)
+      setMessages(prev)
+    }
+  }, [])
+
+  return { messages, loading, deleteMessage }
 }
 
 function toMessage(row: MessageRow, author_name: string): Message {

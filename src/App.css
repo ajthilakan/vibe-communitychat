@@ -436,6 +436,66 @@
   color: var(--text-muted);
 }
 
+/* Admin-only delete control on a message; revealed on hover to stay unobtrusive. */
+.message-delete {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  cursor: pointer;
+  opacity: 0;
+  padding: 0 2px;
+}
+
+.message:hover .message-delete {
+  opacity: 1;
+}
+
+.message-delete:hover {
+  color: #ef4444;
+  text-decoration: underline;
+}
+
+/* ---------- Users (admin) panel ---------- */
+.users-card {
+  max-width: 440px;
+}
+
+.users-list {
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 0;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.users-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.users-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.users-tag {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.users-tag-blocked {
+  color: #ef4444;
+}
+
 /* ---------- Composer ---------- */
 .composer {
   display: flex;

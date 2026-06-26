@@ -15,6 +15,8 @@ export function ThreadPanel({
   onClose,
   readOnly = false,
   onRequestLogin,
+  isAdmin = false,
+  onDelete,
 }: {
   parent: Message
   replies: Message[]
@@ -24,6 +26,8 @@ export function ThreadPanel({
   onClose: () => void
   readOnly?: boolean
   onRequestLogin?: () => void
+  isAdmin?: boolean
+  onDelete?: (messageId: string) => void
 }) {
   return (
     <aside className="thread-panel" aria-label="Thread">
@@ -40,6 +44,8 @@ export function ThreadPanel({
           summaries={summariesFor(parent.id)}
           onToggleReaction={onToggleReaction}
           readOnly={readOnly}
+          isAdmin={isAdmin}
+          onDelete={onDelete}
         />
       </div>
 
@@ -54,6 +60,8 @@ export function ThreadPanel({
               summaries={summariesFor(r.id)}
               onToggleReaction={onToggleReaction}
               readOnly={readOnly}
+              isAdmin={isAdmin}
+              onDelete={onDelete}
             />
           ))
         )}
