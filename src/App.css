@@ -279,6 +279,28 @@
   opacity: 0.6;
 }
 
+/* ---------- Online presence ---------- */
+.sidebar-online {
+  margin-top: 16px;
+}
+
+.online-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.online-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3ba55d;
+  flex-shrink: 0;
+}
+
 /* ---------- Channel view ---------- */
 .app-content {
   flex: 1;
@@ -370,6 +392,15 @@
   font-size: 0.8rem;
   padding: 2px 0;
   margin-top: 2px;
+}
+
+/* ---------- Typing indicator ---------- */
+.typing-indicator {
+  min-height: 18px;
+  padding: 0 16px 2px;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--text-muted);
 }
 
 /* ---------- Composer ---------- */
