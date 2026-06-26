@@ -71,7 +71,7 @@ create policy "profiles: anon read public-server authors"
       select 1
       from public.messages m
       join public.channels c on c.id = m.channel_id
-      where m.user_id = id
+      where m.user_id = public.profiles.id
         and c.server_id = '11111111-1111-1111-1111-111111111111'
     )
   );
