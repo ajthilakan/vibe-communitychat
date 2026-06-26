@@ -29,3 +29,9 @@ dist-ssr
 
 # but DO track the example
 !.env.example
+
+# Internal planning/build docs — keep out of the public repo
+docs/plans/
+
+# Ops runbook kept in the maintainer's private vault, not this public repo
+KILL-SWITCH.md

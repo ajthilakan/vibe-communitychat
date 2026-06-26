@@ -1,0 +1,62 @@
+import type { Message, ReactionSummary } from '../types'
+import { MessageItem } from './MessageItem'
+import { MessageComposer } from './MessageComposer'
+
+// Slack-style thread panel (U11): the parent message, its replies, and a composer
+// scoped to the parent. Replies arrive live through the channel's realtime
+// subscription, so a reply posted elsewhere shows up here without a refresh.
+export function ThreadPanel({
+  parent,
+  replies,
+  channelId,
+  summariesFor,
+  onToggleReaction,
+  onClose,
+}: {
+  parent: Message
+  replies: Message[]
+  channelId: string
+  summariesFor: (messageId: string) => ReactionSummary[]
+  onToggleReaction: (messageId: string, emoji: string, mine: boolean) => void
+  onClose: () => void
+}) {
+  return (
+    <aside className="thread-panel" aria-label="Thread">
+      <div className="thread-head">
+        <span>Thread</span>
+        <button type="button" className="link-button" onClick={onClose} aria-label="Close thread">
+          ✕
+        </button>
+      </div>
+
+      <div className="thread-parent">
+        <MessageItem
+          message={parent}
+          summaries={summariesFor(parent.id)}
+          onToggleReaction={onToggleReaction}
+        />
+      </div>
+
+      <div className="thread-replies">
+        {replies.length === 0 ? (
+          <div className="message-list empty">No replies yet.</div>
+        ) : (
+          replies.map((r) => (
+            <MessageItem
+              key={r.id}
+              message={r}
+              summaries={summariesFor(r.id)}
+              onToggleReaction={onToggleReaction}
+            />
+          ))
+        )}
+      </div>
+
+      <MessageComposer
+        channelId={channelId}
+        parentId={parent.id}
+        placeholder="Reply…"
+      />
+    </aside>
+  )
+}
