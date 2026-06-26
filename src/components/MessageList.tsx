@@ -11,6 +11,7 @@ export function MessageList({
   summariesFor,
   onToggleReaction,
   onOpenThread,
+  readOnly = false,
 }: {
   messages: Message[]
   loading: boolean
@@ -18,6 +19,7 @@ export function MessageList({
   summariesFor: (messageId: string) => ReactionSummary[]
   onToggleReaction: (messageId: string, emoji: string, mine: boolean) => void
   onOpenThread: (messageId: string) => void
+  readOnly?: boolean
 }) {
   if (loading) {
     return <div className="message-list empty">Loading messages…</div>
@@ -40,6 +42,7 @@ export function MessageList({
           onToggleReaction={onToggleReaction}
           replyCount={replyCounts[m.id]}
           onOpenThread={() => onOpenThread(m.id)}
+          readOnly={readOnly}
         />
       ))}
     </div>

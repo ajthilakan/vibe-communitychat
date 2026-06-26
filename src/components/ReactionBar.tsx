@@ -10,11 +10,33 @@ const PALETTE = ['👍', '❤️', '😂', '🎉', '👀', '🔥']
 export function ReactionBar({
   summaries,
   onToggle,
+  readOnly = false,
 }: {
   summaries: ReactionSummary[]
   onToggle: (emoji: string, mine: boolean) => void
+  readOnly?: boolean
 }) {
   const [pickerOpen, setPickerOpen] = useState(false)
+
+  // Read-only (logged-out): show existing reactions as static counts, no toggle
+  // and no add button. Nothing renders when there are no reactions yet.
+  if (readOnly) {
+    if (summaries.length === 0) return null
+    return (
+      <div className="reaction-bar">
+        {summaries.map((s) => (
+          <span
+            key={s.emoji}
+            className="reaction-chip static"
+            aria-label={`${s.emoji} ${s.count}`}
+          >
+            <span>{s.emoji}</span>
+            <span className="reaction-count">{s.count}</span>
+          </span>
+        ))}
+      </div>
+    )
+  }
 
   return (
     <div className="reaction-bar">

@@ -1,21 +1,26 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/useAuth'
 import { useChannels } from '../hooks/useChannels'
+import { MagicLinkForm } from '../auth/MagicLinkForm'
 import { ChannelSidebar } from './ChannelSidebar'
 import { ChannelView } from './ChannelView'
 import { Footer } from './Footer'
 import { ProfileDialog } from './ProfileDialog'
 
-// Authenticated layout: server title + identity/sign-out, channel sidebar, and the
-// active channel. Defaults to #welcome on first load (U8/U12). The identity button
-// in the header opens the profile editor; new users who haven't picked a display
-// name yet get a one-time prompt.
+// App layout for both states. Authenticated: server title + identity/sign-out (the
+// identity button opens the profile editor; new users who haven't picked a display
+// name yet get a one-time prompt) and full compose. Logged-out (read-only): a "Log in"
+// button in the header and an in-place CTA in place of the composer; the magic-link
+// form is reachable but not forced (U15). Defaults to #welcome on first load (U8/U12).
 export function AppShell() {
   const { user, profile, signOut } = useAuth()
   const { channels, loading } = useChannels()
   const [activeId, setActiveId] = useState<string | null>(null)
   const [editingProfile, setEditingProfile] = useState(false)
   const [promptDismissed, setPromptDismissed] = useState(false)
+  const [showLogin, setShowLogin] = useState(false)
+
+  const readOnly = !user
 
   useEffect(() => {
     if (!activeId && channels.length > 0) {
@@ -31,22 +36,47 @@ export function AppShell() {
   const showPrompt = !!profile && !profile.display_name_set && !promptDismissed
   const identity = profile?.display_name ?? user?.email ?? 'You'
 
+  // Logged-out visitor chose to log in: show the magic-link form, with a way back
+  // to keep browsing read-only.
+  if (readOnly && showLogin) {
+    return (
+      <div className="auth-screen">
+        <div>
+          <MagicLinkForm />
+          <p className="auth-back">
+            <button type="button" className="link-button" onClick={() => setShowLogin(false)}>
+              ← Back to browsing
+            </button>
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="app">
       <header className="app-header">
         <div className="app-title">CommunityChat</div>
         <div className="app-user">
-          <button
-            type="button"
-            className="app-identity"
-            onClick={() => setEditingProfile(true)}
-            title="Edit your display name"
-          >
-            {identity}
-          </button>
-          <button type="button" className="link-button" onClick={() => void signOut()}>
-            Sign out
-          </button>
+          {readOnly ? (
+            <button type="button" className="header-login" onClick={() => setShowLogin(true)}>
+              Log in
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                className="app-identity"
+                onClick={() => setEditingProfile(true)}
+                title="Edit your display name"
+              >
+                {identity}
+              </button>
+              <button type="button" className="link-button" onClick={() => void signOut()}>
+                Sign out
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -60,7 +90,12 @@ export function AppShell() {
           {loading ? (
             <div className="message-list empty">Loading channels…</div>
           ) : active ? (
-            <ChannelView key={active.id} channel={active} />
+            <ChannelView
+              key={active.id}
+              channel={active}
+              readOnly={readOnly}
+              onRequestLogin={() => setShowLogin(true)}
+            />
           ) : (
             <div className="message-list empty">No channels available.</div>
           )}

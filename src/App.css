@@ -72,6 +72,11 @@
   font-size: 0.95rem;
 }
 
+.auth-back {
+  text-align: center;
+  margin-top: 16px;
+}
+
 /* ---------- App layout ---------- */
 .app {
   height: 100%;
@@ -118,6 +123,20 @@
 
 .app-identity:hover {
   background: var(--bg-elevated);
+}
+
+.header-login {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.header-login:hover {
+  background: var(--accent-hover);
 }
 
 /* ---------- Modal (profile / display-name) ---------- */
@@ -201,7 +220,6 @@
   opacity: 0.6;
   cursor: default;
 }
-
 .app-body {
   flex: 1;
   display: flex;
@@ -397,6 +415,32 @@
   margin: 0;
 }
 
+/* ---------- Read-only login CTA (replaces the composer for anon) ---------- */
+.login-cta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 16px;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.login-cta button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.login-cta button:hover {
+  background: var(--accent-hover);
+}
+
 /* ---------- Thread panel ---------- */
 .thread-panel {
   width: 360px;
@@ -459,6 +503,11 @@
 .reaction-chip.add {
   color: var(--text-muted);
   padding: 1px 8px;
+}
+
+/* Static (read-only) chips: same look, but not interactive. */
+.reaction-chip.static {
+  cursor: default;
 }
 
 .reaction-count {
