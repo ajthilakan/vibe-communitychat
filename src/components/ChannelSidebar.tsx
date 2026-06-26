@@ -1,15 +1,19 @@
 import type { Channel } from '../types'
+import type { OnlineMember } from '../lib/presenceUtils'
 
 // Channel list, ordered by position. Selecting a channel sets the active channel
 // in AppShell. #welcome is the default selection on first load (handled upstream).
+// Below the channels, a live "Online" roster from Supabase Realtime presence.
 export function ChannelSidebar({
   channels,
   activeId,
   onSelect,
+  online,
 }: {
   channels: Channel[]
   activeId: string | null
   onSelect: (channel: Channel) => void
+  online: OnlineMember[]
 }) {
   return (
     <nav className="sidebar" aria-label="Channels">
@@ -29,6 +33,20 @@ export function ChannelSidebar({
           </li>
         ))}
       </ul>
+
+      {online.length > 0 && (
+        <div className="sidebar-online">
+          <div className="sidebar-heading">Online — {online.length}</div>
+          <ul>
+            {online.map((m) => (
+              <li key={m.userId} className="online-item">
+                <span className="online-dot" aria-hidden="true" />
+                {m.displayName}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </nav>
   )
 }

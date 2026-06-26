@@ -12,10 +12,14 @@ export function MessageComposer({
   channelId,
   parentId = null,
   placeholder,
+  onTyping,
 }: {
   channelId: string
   parentId?: string | null
   placeholder?: string
+  // Fired as the user types so the parent can broadcast a "typing" ping (throttled
+  // by the caller). Optional — thread replies don't drive the channel indicator.
+  onTyping?: () => void
 }) {
   const { user } = useAuth()
   const [body, setBody] = useState('')
@@ -78,7 +82,10 @@ export function MessageComposer({
       <textarea
         ref={textareaRef}
         value={body}
-        onChange={(e) => setBody(e.target.value)}
+        onChange={(e) => {
+          setBody(e.target.value)
+          if (e.target.value.trim().length > 0) onTyping?.()
+        }}
         onKeyDown={onKeyDown}
         placeholder={placeholder ?? 'Write a message…'}
         rows={1}

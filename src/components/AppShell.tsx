@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/useAuth'
 import { useChannels } from '../hooks/useChannels'
+import { usePresence } from '../hooks/usePresence'
 import { MagicLinkForm } from '../auth/MagicLinkForm'
 import { ChannelSidebar } from './ChannelSidebar'
 import { ChannelView } from './ChannelView'
@@ -35,6 +36,11 @@ export function AppShell() {
   // a name (display_name_set flips true) or dismisses it for this session.
   const showPrompt = !!profile && !profile.display_name_set && !promptDismissed
   const identity = profile?.display_name ?? user?.email ?? 'You'
+
+  // Who's online, server-wide. One presence channel for the (single) server; we
+  // announce only a display_name (never email). Anon visitors observe but don't appear.
+  const serverId = channels[0]?.server_id ?? null
+  const online = usePresence(serverId, user?.id, profile?.display_name ?? 'Someone')
 
   // Logged-out visitor chose to log in: show the magic-link form, with a way back
   // to keep browsing read-only.
@@ -85,6 +91,7 @@ export function AppShell() {
           channels={channels}
           activeId={activeId}
           onSelect={(c) => setActiveId(c.id)}
+          online={online}
         />
         <main className="app-content">
           {loading ? (

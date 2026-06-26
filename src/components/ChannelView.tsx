@@ -3,8 +3,10 @@ import type { Channel } from '../types'
 import { useAuth } from '../auth/useAuth'
 import { useChannelMessages } from '../hooks/useChannelMessages'
 import { useChannelReactions } from '../hooks/useChannelReactions'
+import { useTyping } from '../hooks/useTyping'
 import { aggregateReactions } from '../lib/reactionUtils'
 import { replyCounts } from '../lib/messageUtils'
+import { formatTypingText } from '../lib/typingUtils'
 import { MessageList } from './MessageList'
 import { MessageComposer } from './MessageComposer'
 import { LoginCta } from './LoginCta'
@@ -25,14 +27,27 @@ export function ChannelView({
   readOnly: boolean
   onRequestLogin: () => void
 }) {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const { messages, loading } = useChannelMessages(channel.id)
   const messageIds = useMemo(() => messages.map((m) => m.id), [messages])
   const { reactions, toggle } = useChannelReactions(channel.id, user?.id, messageIds)
+  const { typingNames, notifyTyping, clearUser } = useTyping(
+    channel.id,
+    user?.id,
+    profile?.display_name ?? 'Someone',
+  )
   const [threadParentId, setThreadParentId] = useState<string | null>(null)
 
   // Close any open thread when switching channels.
   useEffect(() => setThreadParentId(null), [channel.id])
+
+  // A person's own message landing means they've stopped typing — clear them
+  // immediately rather than waiting for the idle timeout.
+  const lastMessage = messages[messages.length - 1]
+  const lastMessageId = lastMessage?.id
+  useEffect(() => {
+    if (lastMessage) clearUser(lastMessage.user_id)
+  }, [lastMessageId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const topLevel = useMemo(
     () => messages.filter((m) => m.parent_message_id === null),
@@ -76,10 +91,17 @@ export function ChannelView({
             onOpenThread={setThreadParentId}
             readOnly={readOnly}
           />
+          <div className="typing-indicator" aria-live="polite">
+            {formatTypingText(typingNames)}
+          </div>
           {readOnly ? (
             <LoginCta onLogin={onRequestLogin} />
           ) : (
-            <MessageComposer channelId={channel.id} placeholder={`Message #${channel.name}`} />
+            <MessageComposer
+              channelId={channel.id}
+              placeholder={`Message #${channel.name}`}
+              onTyping={notifyTyping}
+            />
           )}
         </div>
 
