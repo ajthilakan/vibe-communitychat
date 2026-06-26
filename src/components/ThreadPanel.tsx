@@ -1,6 +1,7 @@
 import type { Message, ReactionSummary } from '../types'
 import { MessageItem } from './MessageItem'
 import { MessageComposer } from './MessageComposer'
+import { LoginCta } from './LoginCta'
 
 // Slack-style thread panel (U11): the parent message, its replies, and a composer
 // scoped to the parent. Replies arrive live through the channel's realtime
@@ -12,6 +13,8 @@ export function ThreadPanel({
   summariesFor,
   onToggleReaction,
   onClose,
+  readOnly = false,
+  onRequestLogin,
 }: {
   parent: Message
   replies: Message[]
@@ -19,6 +22,8 @@ export function ThreadPanel({
   summariesFor: (messageId: string) => ReactionSummary[]
   onToggleReaction: (messageId: string, emoji: string, mine: boolean) => void
   onClose: () => void
+  readOnly?: boolean
+  onRequestLogin?: () => void
 }) {
   return (
     <aside className="thread-panel" aria-label="Thread">
@@ -34,6 +39,7 @@ export function ThreadPanel({
           message={parent}
           summaries={summariesFor(parent.id)}
           onToggleReaction={onToggleReaction}
+          readOnly={readOnly}
         />
       </div>
 
@@ -47,16 +53,21 @@ export function ThreadPanel({
               message={r}
               summaries={summariesFor(r.id)}
               onToggleReaction={onToggleReaction}
+              readOnly={readOnly}
             />
           ))
         )}
       </div>
 
-      <MessageComposer
-        channelId={channelId}
-        parentId={parent.id}
-        placeholder="Reply…"
-      />
+      {readOnly ? (
+        <LoginCta onLogin={onRequestLogin ?? (() => {})} />
+      ) : (
+        <MessageComposer
+          channelId={channelId}
+          parentId={parent.id}
+          placeholder="Reply…"
+        />
+      )}
     </aside>
   )
 }

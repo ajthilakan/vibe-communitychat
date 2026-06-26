@@ -7,13 +7,24 @@ import { aggregateReactions } from '../lib/reactionUtils'
 import { replyCounts } from '../lib/messageUtils'
 import { MessageList } from './MessageList'
 import { MessageComposer } from './MessageComposer'
+import { LoginCta } from './LoginCta'
 import { ThreadPanel } from './ThreadPanel'
 import { WelcomeBanner } from './WelcomeBanner'
 
 // Active-channel surface: wires the channel's live messages and reactions to the
 // list, composer, and (when opened) thread panel. #welcome additionally shows the
-// static WelcomeBanner (U12).
-export function ChannelView({ channel }: { channel: Channel }) {
+// static WelcomeBanner (U12). In read-only mode (logged-out, U15) the composer and
+// reaction/reply controls are replaced by a login CTA — reads still work via the
+// anon RLS policies (0007_anon_read.sql).
+export function ChannelView({
+  channel,
+  readOnly,
+  onRequestLogin,
+}: {
+  channel: Channel
+  readOnly: boolean
+  onRequestLogin: () => void
+}) {
   const { user } = useAuth()
   const { messages, loading } = useChannelMessages(channel.id)
   const messageIds = useMemo(() => messages.map((m) => m.id), [messages])
@@ -63,8 +74,13 @@ export function ChannelView({ channel }: { channel: Channel }) {
             summariesFor={summariesFor}
             onToggleReaction={toggle}
             onOpenThread={setThreadParentId}
+            readOnly={readOnly}
           />
-          <MessageComposer channelId={channel.id} placeholder={`Message #${channel.name}`} />
+          {readOnly ? (
+            <LoginCta onLogin={onRequestLogin} />
+          ) : (
+            <MessageComposer channelId={channel.id} placeholder={`Message #${channel.name}`} />
+          )}
         </div>
 
         {threadParent && (
@@ -75,6 +91,8 @@ export function ChannelView({ channel }: { channel: Channel }) {
             summariesFor={summariesFor}
             onToggleReaction={toggle}
             onClose={() => setThreadParentId(null)}
+            readOnly={readOnly}
+            onRequestLogin={onRequestLogin}
           />
         )}
       </div>

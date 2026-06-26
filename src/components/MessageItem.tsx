@@ -20,13 +20,19 @@ export function MessageItem({
   onToggleReaction,
   replyCount,
   onOpenThread,
+  readOnly = false,
 }: {
   message: Message
   summaries: ReactionSummary[]
   onToggleReaction: (messageId: string, emoji: string, mine: boolean) => void
   replyCount?: number
   onOpenThread?: () => void
+  readOnly?: boolean
 }) {
+  // Read-only viewers can still open a thread to READ replies, but the "start a
+  // thread" prompt (0 replies) is hidden — there's nothing to read and they can't post.
+  const showThreadLink = onOpenThread && (!readOnly || !!replyCount)
+
   return (
     <div className="message">
       <div className="message-head">
@@ -37,8 +43,9 @@ export function MessageItem({
       <ReactionBar
         summaries={summaries}
         onToggle={(emoji, mine) => onToggleReaction(message.id, emoji, mine)}
+        readOnly={readOnly}
       />
-      {onOpenThread && (
+      {showThreadLink && (
         <button type="button" className="thread-link" onClick={onOpenThread}>
           {replyCount
             ? `${replyCount} ${replyCount === 1 ? 'reply' : 'replies'}`

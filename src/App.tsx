@@ -1,14 +1,14 @@
 import { useAuth } from './auth/useAuth'
-import { MagicLinkForm } from './auth/MagicLinkForm'
 import { AuthCallback } from './auth/AuthCallback'
 import { authErrorFromUrl } from './auth/authError'
 import { AppShell } from './components/AppShell'
 import './App.css'
 
-// Auth gate: no session => magic-link screen (or a clear error if a stale link
-// brought the user back); session => the chat app.
+// No auth gate on reads: logged-out visitors get the app in read-only mode
+// (AppShell handles anon vs. authenticated). The only full-screen interrupt is a
+// failed magic-link return (expired/used link), which still shows the error card.
 function App() {
-  const { session, loading } = useAuth()
+  const { loading } = useAuth()
   const urlError = authErrorFromUrl()
 
   if (loading) {
@@ -21,10 +21,10 @@ function App() {
     )
   }
 
-  if (!session) {
+  if (urlError) {
     return (
       <div className="auth-screen">
-        {urlError ? <AuthCallback message={urlError} /> : <MagicLinkForm />}
+        <AuthCallback message={urlError} />
       </div>
     )
   }
