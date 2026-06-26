@@ -81,16 +81,20 @@ export function ChannelView({
 
       <div className="channel-main">
         <div className="channel-stream">
-          {channel.slug === 'welcome' && <WelcomeBanner />}
-          <MessageList
-            messages={topLevel}
-            loading={loading}
-            replyCounts={counts}
-            summariesFor={summariesFor}
-            onToggleReaction={toggle}
-            onOpenThread={setThreadParentId}
-            readOnly={readOnly}
-          />
+          {/* The banner lives inside the scroll region so it scrolls away with the
+              messages instead of pinning to the top (important on mobile, U12). */}
+          <div className="channel-scroll">
+            {channel.slug === 'welcome' && <WelcomeBanner />}
+            <MessageList
+              messages={topLevel}
+              loading={loading}
+              replyCounts={counts}
+              summariesFor={summariesFor}
+              onToggleReaction={toggle}
+              onOpenThread={setThreadParentId}
+              readOnly={readOnly}
+            />
+          </div>
           <div className="typing-indicator" aria-live="polite">
             {formatTypingText(typingNames)}
           </div>
@@ -101,6 +105,7 @@ export function ChannelView({
               channelId={channel.id}
               placeholder={`Message #${channel.name}`}
               onTyping={notifyTyping}
+              autoFocus
             />
           )}
         </div>

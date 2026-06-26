@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent, KeyboardEvent } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../auth/useAuth'
@@ -13,6 +13,7 @@ export function MessageComposer({
   parentId = null,
   placeholder,
   onTyping,
+  autoFocus = false,
 }: {
   channelId: string
   parentId?: string | null
@@ -20,6 +21,7 @@ export function MessageComposer({
   // Fired as the user types so the parent can broadcast a "typing" ping (throttled
   // by the caller). Optional — thread replies don't drive the channel indicator.
   onTyping?: () => void
+  autoFocus?: boolean
 }) {
   const { user } = useAuth()
   const [body, setBody] = useState('')
@@ -27,6 +29,16 @@ export function MessageComposer({
   const [sending, setSending] = useState(false)
   const [emojiOpen, setEmojiOpen] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Focus the composer when a channel is opened. Skip on narrow/touch viewports
+  // so we don't force the on-screen keyboard open every time a channel changes —
+  // there, tapping the field focuses it natively.
+  useEffect(() => {
+    if (!autoFocus) return
+    if (window.matchMedia('(min-width: 641px)').matches) {
+      textareaRef.current?.focus()
+    }
+  }, [autoFocus])
 
   async function send() {
     const trimmed = body.trim()
