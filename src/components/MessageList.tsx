@@ -11,6 +11,7 @@ export function MessageList({
   summariesFor,
   onToggleReaction,
   onOpenThread,
+  unreadThreadIds,
   readOnly = false,
   isAdmin = false,
   onDelete,
@@ -21,6 +22,7 @@ export function MessageList({
   summariesFor: (messageId: string) => ReactionSummary[]
   onToggleReaction: (messageId: string, emoji: string, mine: boolean) => void
   onOpenThread: (messageId: string) => void
+  unreadThreadIds?: Set<string>
   readOnly?: boolean
   isAdmin?: boolean
   onDelete?: (messageId: string) => void
@@ -46,6 +48,7 @@ export function MessageList({
           onToggleReaction={onToggleReaction}
           replyCount={replyCounts[m.id]}
           onOpenThread={() => onOpenThread(m.id)}
+          threadUnread={unreadThreadIds?.has(m.id)}
           readOnly={readOnly}
           isAdmin={isAdmin}
           onDelete={onDelete}

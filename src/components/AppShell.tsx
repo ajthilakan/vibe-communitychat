@@ -2,12 +2,16 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../auth/useAuth'
 import { useChannels } from '../hooks/useChannels'
 import { usePresence } from '../hooks/usePresence'
+import { useUnread } from '../hooks/useUnread'
+import { useNotifications } from '../hooks/useNotifications'
 import { MagicLinkForm } from '../auth/MagicLinkForm'
 import { ChannelSidebar } from './ChannelSidebar'
 import { ChannelView } from './ChannelView'
 import { Footer } from './Footer'
+import { NotificationsPanel } from './NotificationsPanel'
 import { ProfileDialog } from './ProfileDialog'
 import { UsersPanel } from './UsersPanel'
+import type { NotificationItem } from '../types'
 
 // App layout for both states. Authenticated: server title + identity/sign-out (the
 // identity button opens the profile editor; new users who haven't picked a display
@@ -25,8 +29,29 @@ export function AppShell() {
   // desktop the sidebar is always visible (CSS), so this flag is a no-op there.
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showUsers, setShowUsers] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
+  // A thread to auto-open after a notification click. focusToken bumps on every
+  // click so re-opening the same thread (already in-channel) re-triggers.
+  const [focus, setFocus] = useState<{ channelId: string; threadId: string | null; token: number }>(
+    { channelId: '', threadId: null, token: 0 },
+  )
 
   const readOnly = !user
+
+  // Unread channel/thread tracking + the notifications inbox (both authenticated-only).
+  const unread = useUnread(user?.id, activeId)
+  const notifications = useNotifications(user?.id)
+
+  function openNotifications() {
+    setShowNotifications(true)
+    void notifications.markAllRead()
+  }
+
+  function handleSelectNotification(n: NotificationItem) {
+    setActiveId(n.channel_id)
+    setFocus((f) => ({ channelId: n.channel_id, threadId: n.thread_root_id, token: f.token + 1 }))
+    setShowNotifications(false)
+  }
 
   useEffect(() => {
     if (!activeId && channels.length > 0) {
@@ -94,6 +119,24 @@ export function AppShell() {
               )}
               <button
                 type="button"
+                className="notif-bell"
+                onClick={openNotifications}
+                aria-label={
+                  notifications.unreadCount > 0
+                    ? `Notifications (${notifications.unreadCount} unread)`
+                    : 'Notifications'
+                }
+                title="Notifications"
+              >
+                🔔
+                {notifications.unreadCount > 0 && (
+                  <span className="notif-badge">
+                    {notifications.unreadCount > 9 ? '9+' : notifications.unreadCount}
+                  </span>
+                )}
+              </button>
+              <button
+                type="button"
                 className="app-identity"
                 onClick={() => setEditingProfile(true)}
                 title="Edit your display name"
@@ -113,6 +156,7 @@ export function AppShell() {
           channels={channels}
           activeId={activeId}
           online={online}
+          unreadChannelIds={unread.unreadChannelIds}
           open={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
           onSelect={(c) => {
@@ -129,6 +173,9 @@ export function AppShell() {
               channel={active}
               readOnly={readOnly}
               onRequestLogin={() => setShowLogin(true)}
+              unreadBaseline={unread.baselineFor(active.id)}
+              focusThreadId={focus.channelId === active.id ? focus.threadId : null}
+              focusToken={focus.channelId === active.id ? focus.token : 0}
             />
           ) : (
             <div className="message-list empty">No channels available.</div>
@@ -145,6 +192,14 @@ export function AppShell() {
             setEditingProfile(false)
             setPromptDismissed(true)
           }}
+        />
+      )}
+
+      {!readOnly && showNotifications && (
+        <NotificationsPanel
+          items={notifications.items}
+          onSelect={handleSelectNotification}
+          onClose={() => setShowNotifications(false)}
         />
       )}
 

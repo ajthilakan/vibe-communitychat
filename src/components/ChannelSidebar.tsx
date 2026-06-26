@@ -11,6 +11,7 @@ export function ChannelSidebar({
   activeId,
   onSelect,
   online,
+  unreadChannelIds,
   open = false,
   onClose,
 }: {
@@ -18,6 +19,7 @@ export function ChannelSidebar({
   activeId: string | null
   onSelect: (channel: Channel) => void
   online: OnlineMember[]
+  unreadChannelIds?: Set<string>
   open?: boolean
   onClose?: () => void
 }) {
@@ -33,19 +35,24 @@ export function ChannelSidebar({
       >
         <div className="sidebar-heading">Channels</div>
         <ul>
-          {channels.map((c) => (
-            <li key={c.id}>
-              <button
-                type="button"
-                className={`channel-item${c.id === activeId ? ' active' : ''}`}
-                onClick={() => onSelect(c)}
-                aria-current={c.id === activeId ? 'page' : undefined}
-              >
-                <span className="channel-hash">#</span>
-                {c.name}
-              </button>
-            </li>
-          ))}
+          {channels.map((c) => {
+            // The active channel is never shown unread (you're reading it).
+            const unread = c.id !== activeId && !!unreadChannelIds?.has(c.id)
+            return (
+              <li key={c.id}>
+                <button
+                  type="button"
+                  className={`channel-item${c.id === activeId ? ' active' : ''}${unread ? ' unread' : ''}`}
+                  onClick={() => onSelect(c)}
+                  aria-current={c.id === activeId ? 'page' : undefined}
+                >
+                  <span className="channel-hash">#</span>
+                  {c.name}
+                  {unread && <span className="channel-unread-dot" aria-label="unread messages" />}
+                </button>
+              </li>
+            )
+          })}
         </ul>
 
         {online.length > 0 && (

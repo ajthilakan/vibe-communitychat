@@ -325,6 +325,168 @@
   flex-shrink: 0;
 }
 
+/* ---------- Unread channels ---------- */
+/* An unread channel reads brighter + bolder, with a dot pushed to the right. */
+.channel-item.unread {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.channel-unread-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* On the active channel the dot would sit on the accent background — hide it
+   (the active channel is never marked unread anyway). */
+.channel-item.active .channel-unread-dot {
+  display: none;
+}
+
+/* ---------- Notifications (bell + panel) ---------- */
+.notif-bell {
+  position: relative;
+  background: none;
+  border: none;
+  font-size: 1.05rem;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.notif-bell:hover {
+  background: var(--bg-elevated);
+}
+
+.notif-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--danger, #ef4444);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+
+.notif-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+}
+
+.notif-panel {
+  position: fixed;
+  top: 52px;
+  right: 12px;
+  width: 320px;
+  max-width: calc(100vw - 24px);
+  max-height: 70vh;
+  overflow-y: auto;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  z-index: 50;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.notif-head {
+  font-weight: 700;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.notif-empty {
+  padding: 20px 14px;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.notif-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+}
+
+.notif-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.notif-item:hover {
+  background: var(--chip);
+}
+
+.notif-item.unread {
+  background: var(--chip-mine);
+}
+
+.notif-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.notif-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-time {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  flex-shrink: 0;
+}
+
+/* Unread-thread marker on a message's reply link. */
+.thread-link.unread {
+  color: var(--accent);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.thread-unread-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.thread-unread-tag {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 6px;
+  padding: 0 5px;
+  line-height: 1.5;
+}
+
 /* ---------- Channel view ---------- */
 .app-content {
   flex: 1;
